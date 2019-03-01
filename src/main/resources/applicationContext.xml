@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-4.0.xsd
+            http://www.springframework.org/schema/tx
+            http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+    <!-- 扫描注解 -->
+    <context:component-scan base-package="com.cps.www">
+        <!-- 不扫描哪个注解 --><!-- Ctrl+Shift+T,搜索Controller，选择并复制全类名 -->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- 引入小配置文件 -->
+    <context:property-placeholder location="classpath:/applicationContext.properties"/>
+    <!-- 创建数据库 -->
+    <bean class="com.alibaba.druid.pool.DruidDataSource" id="dataSource">
+        <property name="driverClassName" value="${database.driverClassName}"/>
+        <property name="url" value="${database.url}"></property>
+        <property name="username" value="${database.username}"></property>
+        <property name="password" value="${database.password}"></property>
+    </bean>
+
+    <!-- 创建sqlsessionfactory -->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sf">
+        <property name="dataSource" ref="dataSource"></property>
+        <property name="mapperLocations" value="classpath:/com/cps/www/dao/impl/*.xml"></property>
+        <property name="typeAliasesPackage" value="com.cps.www.entity"></property>
+    </bean>
+    <!-- 创建dao -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sf"/>
+        <property name="basePackage" value="com.cps.www.dao"/>
+    </bean>
+    <!-- 声明式事务配置 -->
+    <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="dataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!-- 事务控制注解生效 -->
+    <tx:annotation-driven transaction-manager="dataSourceTransactionManager"/>
+</beans>
